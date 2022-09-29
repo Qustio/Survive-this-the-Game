@@ -29,5 +29,5 @@ jobs:
       with:
         name: game
         path: resources
-        files: "target/debug/game.exe"
+        files: ["target/debug/game.exe"]
     
