@@ -19,7 +19,7 @@ impl Game {
         Self {
             fps: 0,
             engine: Engine::new(vec![
-                Sprite::new("Вася", "gigaman.png", true, (0.0, 300.0)).await,
+                Sprite::new("Вася", "resources/images/gigaman.png", true, (0.0, 300.0)).await,
             ])
             .await,
             state: State::new(),

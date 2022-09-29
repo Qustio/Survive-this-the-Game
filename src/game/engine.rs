@@ -39,7 +39,9 @@ impl Engine {
 impl Constants {
     async fn new() -> Self {
         Self {
-            font: load_ttf_font("Comfortaa-Regular.ttf").await.unwrap(),
+            font: load_ttf_font("resources/fonts/Comfortaa-Regular.ttf")
+                .await
+                .unwrap(),
         }
     }
 }
