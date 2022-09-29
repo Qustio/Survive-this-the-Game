@@ -26,5 +26,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: game
-        path: target/debug/game.exe
+        path: |
+          target/debug/game.exe
+          resorces
     
