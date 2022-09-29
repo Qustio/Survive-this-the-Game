@@ -23,12 +23,13 @@ jobs:
     - name: Build
       run: |
         cargo build
-        Copy-Item .\resources\ .\target\debug\
+        Copy-Item .\target\debug\game.exe .\
     - name: Archive production artifacts
       uses: actions/upload-artifact@v3
       with:
         name: game
         path: |
-          target/debug/game.exe
+          resources
+          game.exe
           
     
