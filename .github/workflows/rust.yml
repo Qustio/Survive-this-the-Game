@@ -28,6 +28,8 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: game
-        path: resources
-        files: ["target/debug/game.exe"]
+        path: |
+          resources
+          target/debug/game.exe
+          
     
