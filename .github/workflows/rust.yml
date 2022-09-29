@@ -29,6 +29,6 @@ jobs:
       with:
         name: game
         path: |
-          target/debug/game.exe
+          !target/debug/game.exe
           resources
     
