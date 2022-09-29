@@ -21,7 +21,9 @@ jobs:
     - name: Run tests
       run: cargo test --verbose
     - name: Build
-      run: cargo build
+      run: |
+        cargo build
+        Copy-Item .\resources\ .\target\debug\
     - name: Archive production artifacts
       uses: actions/upload-artifact@v3
       with:
