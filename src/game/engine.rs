@@ -4,7 +4,7 @@ use macroquad::{
     ui::{root_ui, Skin},
 };
 
-use super::{sprite::Sprite, Closed};
+use super::{sprite::Sprite, state::State, Closed};
 
 pub struct Engine {
     pub sprites: Vec<Sprite>,
@@ -33,7 +33,7 @@ impl Engine {
             }
         }
     }
-    pub fn render_gui(&self) {
+    pub fn render_gui(&self, s: &State) {
         // left pane
         draw_rectangle(
             screen_width() - 500.0,
@@ -50,6 +50,19 @@ impl Engine {
             2.0,
             BLACK,
         );
+        todo!();
+        //split this text
+        draw_text_ex(
+            s.questions[0].text,
+            screen_width() - 500.0,
+            25.0,
+            TextParams {
+                font: self.constans.font,
+                font_size: 25,
+                color: RED,
+                ..Default::default()
+            },
+        )
         // buttons
     }
     pub fn render_exit_dialog(&self) -> Closed {
@@ -64,7 +77,7 @@ impl Engine {
             dialog_position,
             dialog_size,
             |ui: &mut macroquad::ui::Ui| {
-                ui.label(None, "asdasdВы действительно хотите выйти?");
+                ui.label(None, "Вы действительно хотите выйти?");
                 ui.separator();
                 ui.same_line(60.);
                 if ui.button(None, "Да") {
@@ -93,8 +106,7 @@ impl Constants {
                 .text_color(BLACK)
                 .font_size(14)
                 .build();
-            root_ui().default_skin().window_style;
-            let window_style = root_ui()
+            let _window_style = root_ui()
                 .style_builder()
                 // .background(Image::from_file_with_format(
                 //     include_bytes!("../examples/ui_assets/window_background.png"),
@@ -115,6 +127,7 @@ impl Constants {
                 // ))
                 // .background_margin(RectOffset::new(37.0, 37.0, 5.0, 5.0))
                 .margin(RectOffset::new(0.0, 0.0, 10.0, 10.0))
+                //.background_margin(RectOffset::new(0.0, 0.0, 10.0, 10.0))
                 //.background_hovered(Image::from_file_with_format(
                 //    include_bytes!("../examples/ui_assets/button_hovered_background.png"),
                 //    None,

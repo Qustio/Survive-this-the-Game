@@ -8,7 +8,7 @@ use macroquad::prelude::*;
 use sprite::Sprite;
 use state::State;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 pub enum Closed {
     Nope,
     Requested,
@@ -61,7 +61,7 @@ impl Game {
         // draw_circle(screen_width() - 30.0, screen_height() - 30.0, 15.0, YELLOW);
         // draw_text("IT WORKS!", 20.0, 20.0, 30.0, DARKGRAY);
         self.engine.render();
-        self.engine.render_gui();
+        self.engine.render_gui(&self.state);
         if self.closed == Closed::Requested {
             self.closed = self.engine.render_exit_dialog();
         }
