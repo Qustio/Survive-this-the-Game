@@ -1,38 +1,71 @@
 pub struct State {
-    pub hp: u8,
-    pub water: u8,
-    pub day: Option<u8>,
-    max_day: u8,
+    pub hp: (u8, u8),
+    pub saturation: (u8, u8),
+    pub water: (u8, u8),
+    pub day: (u8, u8),
     pub questions: Vec<Question>,
-}
-
-pub struct Question {
-    pub text: &'static str,
-    pub answers: (String, String),
-    pub result: (fn(&mut State), fn(&mut State)),
 }
 
 impl State {
     pub fn new() -> Self {
         Self {
-            hp: 255,
-            water: 255,
-            day: Some(0),
-            max_day: 3,
-            questions: vec![Question::new()],
+            hp: (10, 10),
+            saturation: (5, 5),
+            water: (3, 3),
+            day: (0, 5),
+            questions: Question::get_vec(),
         }
     }
 }
 
+type Result = (fn(&mut State), fn(&mut State));
+
+pub struct Question {
+    pub text: &'static str,
+    pub answers: (String, String),
+    pub result: Result,
+}
+
 impl Question {
-    pub fn new() -> Question {
-        Question {
-            text: "Жили были три коровы одна из них заболела",
-            answers: ("Да".to_owned(), "Нет".to_owned()),
-            result: (
-                |s: &mut State| s.water += 1,
-                |s: &mut State| s.water -= 1,
-            ),
-        }
+    pub fn get_vec() -> Vec<Question> {
+        vec![
+            Question {
+                text: "Ваш взгляд устремлён на\n\
+                неопознанное животное,\n\
+                затаившиееся в кустах.\n\
+                Ваша логика твердит вам\n\
+                о том, что его дикие\n\
+                инстинкты закончат ваше\n\
+                жалкое существование, но\n\
+                всё же вы не можете отказать\n\
+                себе в том, чтобы развеять\n\
+                ещё одну тайну в данном лесу.\n\n\
+                Подойти к животному?",
+                answers: ("Да".to_owned(), "Нет".to_owned()),
+                result: (|s: &mut State| s.hp.0 -= 3, |_| {}),
+            },
+            Question {
+                text: "Жили были три коровы одна\n\
+                из них заболела. А потом\n\
+                пришёл Jeff и починил\n\
+                овервотч.",
+                answers: ("Да".to_owned(), "Нет".to_owned()),
+                result: (
+                    |s: &mut State| s.water.0 += 1,
+                    |s: &mut State| s.water.0 -= 1,
+                ),
+            },
+            Question {
+                text: "Жили были три коровы одна\n\
+                из них заболела. А потом\n\
+                пришёл Jeff и починил\n\
+                овервотч.",
+                answers: ("Да".to_owned(), "Нет".to_owned()),
+                result: (
+                    |s: &mut State| s.water.0 += 1,
+                    |s: &mut State| s.water.0 -= 1,
+                ),
+            },
+        ]
     }
 }

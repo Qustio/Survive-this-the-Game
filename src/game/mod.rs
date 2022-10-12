@@ -41,11 +41,11 @@ impl Game {
 
     pub async fn logick(&mut self) {
         // todo!();
-        if is_key_down(KeyCode::Up) && self.state.hp <= 250 {
-            self.state.hp += 5;
+        if is_key_down(KeyCode::Up) && self.state.hp.0 <= self.state.hp.1 {
+            self.state.hp.0 += 5;
         }
-        if is_key_down(KeyCode::Down) && self.state.hp >= 5 {
-            self.state.hp -= 5;
+        if is_key_down(KeyCode::Down) && self.state.hp.0 >= 5 {
+            self.state.hp.0 -= 5;
         }
         if is_key_down(KeyCode::Escape) {
             self.closed = Closed::Requested;
@@ -61,7 +61,7 @@ impl Game {
         // draw_circle(screen_width() - 30.0, screen_height() - 30.0, 15.0, YELLOW);
         // draw_text("IT WORKS!", 20.0, 20.0, 30.0, DARKGRAY);
         self.engine.render();
-        self.engine.render_gui(&self.state);
+        self.engine.render_gui(&mut self.state);
         if self.closed == Closed::Requested {
             self.closed = self.engine.render_exit_dialog();
         }
