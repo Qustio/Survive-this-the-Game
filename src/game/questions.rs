@@ -29,14 +29,8 @@ impl Questions {
                 ещё одну тайну в данном лесу.\n\n\
                 Подойти к животному?",
                     answers: Answers::new(vec![
-                        Answer {
-                            0: "Да",
-                            1: |s: &mut State| s.hp.0 -= 3,
-                        },
-                        Answer {
-                            0: "Нет",
-                            1: |_| {},
-                        },
+                        Answer("Да", |s: &mut State| s.remove_hp(3)),
+                        Answer("Нет", |_| {}),
                     ]),
                 },
                 Question {
@@ -45,14 +39,8 @@ impl Questions {
                 пришёл Jeff и починил\n\
                 овервотч.",
                     answers: Answers::new(vec![
-                        Answer {
-                            0: "Да",
-                            1: |s: &mut State| s.hp.0 -= 3,
-                        },
-                        Answer {
-                            0: "Нет",
-                            1: |_| {},
-                        },
+                        Answer("Да", |s: &mut State| s.remove_hp(3)),
+                        Answer("Нет", |_| {}),
                     ]),
                 },
                 Question {
@@ -61,14 +49,8 @@ impl Questions {
                 пришёл Jeff и починил\n\
                 овервотч.",
                     answers: Answers::new(vec![
-                        Answer {
-                            0: "Да",
-                            1: |s: &mut State| s.hp.0 -= 3,
-                        },
-                        Answer {
-                            0: "Нет",
-                            1: |_| {},
-                        },
+                        Answer("Да", |s: &mut State| s.remove_hp(3)),
+                        Answer("Нет", |_| {}),
                     ]),
                 },
             ],
@@ -82,7 +64,7 @@ impl Questions {
             Qstate::Answering => (),
             Qstate::None => {
                 let mut r = rng::thread_rng();
-                if self.list.len() == 0 {
+                if self.list.is_empty() {
                     return;
                 }
                 let rusize: usize = r.gen_range(0..self.list.len());
@@ -114,10 +96,6 @@ pub struct Answers {
 impl Answers {
     fn new(answers: Vec<Answer>) -> Self {
         Self { answers }
-    }
-
-    fn count(&self) -> usize {
-        self.answers.len()
     }
 }
 

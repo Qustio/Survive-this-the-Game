@@ -71,5 +71,6 @@ impl State {
             self.saturation.0 = self.saturation.1;
         } else {
             self.saturation.0 += saturation;
+        }
     }
 }

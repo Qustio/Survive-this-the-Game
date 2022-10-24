@@ -141,7 +141,7 @@ impl Engine {
                 );
                 root_ui().pop_skin();
             }
-            None => return,
+            None => (),
         }
     }
 
