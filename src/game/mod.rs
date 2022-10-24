@@ -1,10 +1,13 @@
 mod engine;
+mod questions;
 mod sprite;
 mod state;
 mod strings;
 
 use engine::Engine;
 use macroquad::prelude::*;
+use questions::Questions;
+
 use sprite::Sprite;
 use state::State;
 
@@ -20,6 +23,7 @@ pub struct Game {
     engine: Engine,
     state: State,
     closed: Closed,
+    questions: Questions,
 }
 
 impl Game {
@@ -32,6 +36,7 @@ impl Game {
             .await,
             state: State::new(),
             closed: Closed::Nope,
+            questions: Questions::new(),
         }
     }
 
@@ -50,6 +55,7 @@ impl Game {
         if is_key_down(KeyCode::Escape) {
             self.closed = Closed::Requested;
         }
+        self.questions.get_random_question();
     }
 
     pub async fn render(&mut self) {
@@ -62,6 +68,8 @@ impl Game {
         // draw_text("IT WORKS!", 20.0, 20.0, 30.0, DARKGRAY);
         self.engine.render();
         self.engine.render_gui(&mut self.state);
+        self.engine
+            .render_question(&mut self.state, &self.questions.current);
         if self.closed == Closed::Requested {
             self.closed = self.engine.render_exit_dialog();
         }
