@@ -4,6 +4,9 @@ mod sprite;
 mod state;
 mod strings;
 
+use egui::style::Margin;
+use egui::{FontFamily::*, Frame};
+use egui::{FontId, TextStyle::*};
 use engine::Engine;
 use macroquad::prelude::*;
 use questions::Questions;
@@ -24,10 +27,19 @@ pub struct Game {
     state: State,
     closed: Closed,
     questions: Questions,
+    user_state: UserState,
+}
+
+pub enum UserState {
+    MainMenu,
+    WaitingQuestion,
+    QuestionDialog,
+    HintDialog(usize),
+    EndDialog,
 }
 
 impl Game {
-    pub async fn new() -> Self {
+    pub async fn new() -> Game {
         Self {
             fps: 0,
             engine: Engine::new(vec![
@@ -37,6 +49,7 @@ impl Game {
             state: State::new(),
             closed: Closed::Nope,
             questions: Questions::new(),
+            user_state: UserState::MainMenu,
         }
     }
 
@@ -44,39 +57,92 @@ impl Game {
         self.closed == Closed::Yep
     }
 
+    pub fn reqwest_close(&mut self) {
+        self.closed = Closed::Requested
+    }
+
     pub async fn logick(&mut self) {
-        // todo!();
-        if is_key_down(KeyCode::Up) && self.state.hp.0 <= self.state.hp.1 {
-            self.state.hp.0 += 5;
+        if is_key_down(KeyCode::Up) {
+            self.state.add_hp(5);
         }
-        if is_key_down(KeyCode::Down) && self.state.hp.0 >= 5 {
-            self.state.hp.0 -= 5;
+        if is_key_down(KeyCode::Down) {
+            self.state.remove_hp(5);
         }
         if is_key_down(KeyCode::Escape) {
             self.closed = Closed::Requested;
         }
-        self.questions.get_random_question();
+        if let UserState::WaitingQuestion = self.user_state {
+            match self.questions.get_random_question() {
+                Ok(_) => self.user_state = UserState::QuestionDialog,
+                Err(_) => self.user_state = UserState::EndDialog,
+            }
+        }
     }
 
     pub async fn render(&mut self) {
         self.fps = get_fps();
-        // Clear background
+
+        // clear background
         clear_background(WHITE);
-        // draw_line(40.0, 40.0, 100.0, 200.0, 15.0, BLUE);
-        // draw_rectangle(screen_width() / 2.0 - 60.0, 100.0, 120.0, 60.0, GREEN);
-        // draw_circle(screen_width() - 30.0, screen_height() - 30.0, 15.0, YELLOW);
-        // draw_text("IT WORKS!", 20.0, 20.0, 30.0, DARKGRAY);
-        self.engine.render();
-        self.engine.render_gui(&mut self.state);
-        self.engine
-            .render_question(&mut self.state, &self.questions.current);
-        if self.closed == Closed::Requested {
-            self.closed = self.engine.render_exit_dialog();
-        }
-        // Draw fps in debug mode
+        
+        egui_macroquad::ui(|ctx| {
+            let mut style = (*ctx.style()).clone();
+
+            // custom font
+            style.text_styles = [
+                (Heading, FontId::new(45.0, Proportional)),
+                (Body, FontId::new(30.0, Proportional)),
+                (Button, FontId::new(30.0, Proportional)),
+                (Small, FontId::new(10.0, Proportional)),
+            ]
+            .into();
+            style.visuals.window_shadow.extrusion = 0.;
+
+            // custom style for frames(windows)
+            self.engine.constants.frame_style =
+                Frame::window(&style).inner_margin(Margin::same(20.));
+
+            // apply style    
+            ctx.set_style(style);
+
+            // render scenes
+            match self.user_state {
+                UserState::MainMenu => {
+                    self.engine
+                        .render_main(ctx, &mut self.closed, &mut self.user_state)
+                }
+                UserState::WaitingQuestion => (),
+                UserState::QuestionDialog => {
+                    self.engine.render_question(
+                        ctx,
+                        &mut self.user_state,
+                        &mut self.state,
+                        self.questions.current.as_ref(),
+                    );
+                    self.engine.render_stats(ctx, &self.state);
+                }
+                UserState::HintDialog(_) => {
+                    self.engine.render_hint(
+                        ctx,
+                        &mut self.user_state,
+                        self.questions.current.as_ref(),
+                    );
+                    self.engine.render_stats(ctx, &self.state);
+                }
+                UserState::EndDialog => todo!(),
+            }
+            if self.closed == Closed::Requested {
+                self.closed = self.engine.render_exit_dialog(ctx);
+            }
+        });
+
+        // draw fps in debug mode
         if cfg!(debug_assertions) {
             draw_text(&format!("{}", self.fps), 10.0, 20.0, 36.0, BLACK);
         }
+
+        // draw egui before next frame
+        egui_macroquad::draw();
         next_frame().await;
     }
 }

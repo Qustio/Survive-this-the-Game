@@ -1,252 +1,197 @@
-use macroquad::{
-    hash,
-    prelude::*,
-    ui::{root_ui, Skin},
-};
+use egui::{style::Margin, Frame};
+use macroquad::prelude::*;
 
-use super::{questions::Question, sprite::Sprite, state::State, Closed};
+use super::{questions::Question, sprite::Sprite, state::State, Closed, UserState};
 
 pub struct Engine {
     pub sprites: Vec<Sprite>,
-    pub constans: Constants,
+    pub constants: Constants,
 }
 
 pub struct Constants {
-    font: Font,
-    ui_skin: Skin,
+    pub font: Font,
+    pub frame_style: Frame,
 }
 
 impl Engine {
     pub async fn new(sprites: Vec<Sprite>) -> Self {
         Self {
             sprites,
-            constans: Constants::new().await,
-        }
-    }
-    pub fn render(&self) {
-        for r in &self.sprites {
-            if !r.hidden {
-                r.render();
-                if !r.text.is_empty() {
-                    r.render_text(&self.constans.font);
-                }
-            }
-        }
-    }
-    pub fn render_gui(&self, s: &mut State) {
-        // left pane
-        draw_rectangle(
-            screen_width() - 500.0,
-            0.0,
-            screen_width(),
-            screen_height(),
-            GRAY,
-        );
-        draw_rectangle_lines(
-            screen_width() - 500.0,
-            0.0,
-            screen_width(),
-            screen_height(),
-            2.0,
-            BLACK,
-        );
-        // stats
-
-        // day
-        draw_text_ex(
-            &format!("День: {}/{}", s.day.0, s.day.1),
-            10.,
-            100.,
-            TextParams {
-                font: self.constans.font,
-                font_size: 25,
-                color: BLACK,
-                ..Default::default()
-            },
-        );
-
-        // hp
-        draw_text_ex(
-            &format!("Очки здоровья: {}/{}", s.hp.0, s.hp.1),
-            10.,
-            130.,
-            TextParams {
-                font: self.constans.font,
-                font_size: 25,
-                color: BLACK,
-                ..Default::default()
-            },
-        );
-
-        // saturation
-        draw_text_ex(
-            &format!("Насыщение: {}/{}", s.saturation.0, s.saturation.1),
-            10.,
-            160.,
-            TextParams {
-                font: self.constans.font,
-                font_size: 25,
-                color: BLACK,
-                ..Default::default()
-            },
-        );
-
-        // water
-        draw_text_ex(
-            &format!("Жажда: {}/{}", s.water.0, s.water.1),
-            10.,
-            190.,
-            TextParams {
-                font: self.constans.font,
-                font_size: 25,
-                color: BLACK,
-                ..Default::default()
-            },
-        );
-    }
-
-    pub fn render_question(&self, s: &mut State, q: &Option<Question>) {
-        match q {
-            Some(q) => {
-                //question
-                let mut row = 25.;
-                for t in q.text.split('\n') {
-                    draw_text_ex(
-                        t,
-                        screen_width() - 450.,
-                        row + 30.,
-                        TextParams {
-                            font: self.constans.font,
-                            font_size: 25,
-                            color: BLACK,
-                            ..Default::default()
-                        },
-                    );
-                    row += 25.0;
-                }
-
-                // buttons
-                root_ui().push_skin(&self.constans.ui_skin);
-                root_ui().window(
-                    hash!(),
-                    vec2(1200., 700.),
-                    vec2(200., 100.),
-                    |ui: &mut macroquad::ui::Ui| {
-                        for a in &q.answers.answers {
-                            if ui.button(None, a.get_answer()) {
-                                a.make_choice(s)
-                            }
-                        }
-                    },
-                );
-                root_ui().pop_skin();
-            }
-            None => (),
+            constants: Constants::new().await,
         }
     }
 
-    pub fn render_exit_dialog(&self) -> Closed {
-        let dialog_size = vec2(400., 150.);
-        let screen_size = vec2(screen_width(), screen_height());
-        let dialog_position = screen_size / 2. - dialog_size / 2.;
-
-        let mut exit = Closed::Requested;
-        root_ui().push_skin(&self.constans.ui_skin);
-        root_ui().window(
-            hash!(),
-            dialog_position,
-            dialog_size,
-            |ui: &mut macroquad::ui::Ui| {
-                ui.label(None, "Вы действительно хотите выйти?");
+    pub fn render_main(&self, ctx: &egui::Context, closed: &mut Closed, us: &mut UserState) {
+        egui::Window::new("menu")
+            .title_bar(false)
+            .resizable(false)
+            .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+            .show(ctx, |ui| {
+                ui.vertical_centered_justified(|ui| {
+                    ui.heading("Выживай-ка");
+                });
                 ui.separator();
-                ui.same_line(60.);
-                if ui.button(None, "Да") {
-                    exit = Closed::Yep;
-                }
-                ui.same_line(120.);
-                if ui.button(None, "Нет") {
-                    exit = Closed::Nope;
-                }
-            },
-        );
-        root_ui().pop_skin();
+                ui.vertical_centered_justified(|ui| {
+                    if ui.button("Начать").clicked() {
+                        *us = UserState::WaitingQuestion;
+                    }
+                    if ui.button("Разработчики").clicked() {
+                        todo!();
+                    }
+                    if ui.button("Выход").clicked() {
+                        *closed = Closed::Requested;
+                    }
+                });
+            });
+    }
+
+    pub fn render_stats(&self, ctx: &egui::Context, s: &State) {
+        egui::Window::new("stats")
+            .title_bar(false)
+            .anchor(egui::Align2::LEFT_TOP, egui::vec2(30.0, 20.0))
+            .auto_sized()
+            .show(ctx, |ui| {
+                ui.label(&format!("День: {}/{}", s.day(), s.max_day()));
+                ui.label(&format!("Очки здоровья: {}/{}", s.hp(), s.max_hp()));
+                ui.label(&format!("Голод: {}/{}", s.saturation(), s.max_saturation()));
+                ui.label(&format!("Жажда: {}/{}", s.water(), s.max_water()));
+            });
+    }
+
+    pub fn render_question(
+        &self,
+        ctx: &egui::Context,
+        us: &mut UserState,
+        state: &mut State,
+        q: Option<&Question>,
+    ) {
+        if let Some(q) = q {
+            egui::Window::new("questiontextw")
+                .title_bar(false)
+                .anchor(egui::Align2::RIGHT_CENTER, egui::Vec2::ZERO)
+                .fixed_size(egui::Vec2::new(500., 900.))
+                .fixed_pos(egui::pos2(1100., 0.))
+                .show(ctx, |ui| {
+                    ui.set_min_height(500.);
+                    egui::TopBottomPanel::top("top_panel")
+                        .resizable(false)
+                        .frame(
+                            Frame::default()
+                                .inner_margin(Margin::same(20.))
+                                .outer_margin(Margin::same(5.)),
+                        )
+                        .min_height(32.0)
+                        .show_inside(ui, |ui| {
+                            ui.label(q.text);
+                        });
+                    egui::TopBottomPanel::bottom("bot_panel")
+                        .resizable(false)
+                        .frame(Frame::default().inner_margin(Margin::same(20.)))
+                        .min_height(32.0)
+                        .show_inside(ui, |ui| {
+                            ui.vertical_centered_justified(|ui| {
+                                ui.heading("Выберите дейтвие");
+                            });
+                            ui.separator();
+                            ui.vertical_centered_justified(|ui| {
+                                for (i, a) in q.answers.answers.iter().enumerate() {
+                                    if ui.button(a.get_answer()).clicked() {
+                                        a.make_choice(state);
+                                        *us = UserState::HintDialog(i);
+                                    }
+                                }
+                            });
+                        });
+                });
+        }
+    }
+
+    pub fn render_hint(&self, ctx: &egui::Context, us: &mut UserState, q: Option<&Question>) {
+        if let UserState::HintDialog(hi) = us {
+            if let Some(q) = q {
+                let hint = q.answers.answers[*hi].get_hint();
+                egui::Window::new("questiontextw")
+                    .title_bar(false)
+                    .enabled(false)
+                    .anchor(egui::Align2::RIGHT_CENTER, egui::Vec2::ZERO)
+                    .fixed_size(egui::Vec2::new(500., 900.))
+                    .fixed_pos(egui::pos2(1100., 0.))
+                    .show(ctx, |ui| {
+                        ui.set_min_height(500.);
+                        egui::TopBottomPanel::top("top_panel")
+                            .resizable(false)
+                            .frame(
+                                Frame::default()
+                                    .inner_margin(Margin::same(20.))
+                                    .outer_margin(Margin::same(5.)),
+                            )
+                            .min_height(32.0)
+                            .show_inside(ui, |ui| {
+                                ui.label(q.text);
+                            });
+                        egui::TopBottomPanel::bottom("bot_panel")
+                            .resizable(false)
+                            .frame(Frame::default().inner_margin(Margin::same(20.)))
+                            .min_height(32.0)
+                            .show_inside(ui, |ui| {
+                                ui.vertical_centered_justified(|ui| {
+                                    ui.heading("Выберите дейтвие");
+                                });
+                                ui.separator();
+                                ui.vertical_centered_justified(|ui| {
+                                    for (_i, a) in q.answers.answers.iter().enumerate() {
+                                        if ui.button(a.get_answer()).clicked() {}
+                                    }
+                                });
+                            });
+                    });
+
+                egui::Window::new("hintw")
+                    .title_bar(false)
+                    .resizable(false)
+                    .frame(self.constants.frame_style)
+                    .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0., 0.))
+                    .show(ctx, |ui| {
+                        ui.label(hint);
+                        ui.vertical_centered(|ui| {
+                            if ui.button("Ok").clicked() {
+                                *us = UserState::WaitingQuestion;
+                            }
+                        });
+                    });
+            }
+        }
+    }
+
+    pub fn render_exit_dialog(&self, ctx: &egui::Context) -> Closed {
+        let mut exit = Closed::Requested;
+        egui::Window::new("hintw")
+            .title_bar(false)
+            .resizable(false)
+            .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+            .show(ctx, |ui| {
+                ui.label("Вы действительно хотите выйти?");
+                ui.separator();
+                ui.columns(2, |columns| {
+                    if columns[0].button("Да").clicked() {
+                        exit = Closed::Yep;
+                    }
+                    if columns[1].button("Нет").clicked() {
+                        exit = Closed::Nope;
+                    }
+                });
+            });
         exit
     }
 }
 
 impl Constants {
     async fn new() -> Self {
-        let skin = {
-            let label_style = root_ui()
-                .style_builder()
-                .font(include_bytes!(
-                    "../../resources/fonts/Comfortaa-Regular.ttf"
-                ))
-                .unwrap()
-                .text_color(BLACK)
-                .font_size(14)
-                .build();
-            let _window_style = root_ui()
-                .style_builder()
-                // .background(Image::from_file_with_format(
-                //     include_bytes!("../examples/ui_assets/window_background.png"),
-                //     None,
-                // ))
-                //.background_margin(RectOffset::new(20.0, 20.0, 10.0, 10.0))
-                //.margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .color_inactive(RED)
-                .color_hovered(GREEN)
-                .color_clicked(BLUE)
-                .reverse_background_z(true)
-                .build();
-            let button_style = root_ui()
-                .style_builder()
-                // .background(Image::from_file_with_format(
-                //     include_bytes!("../examples/ui_assets/button_background.png"),
-                //     None,
-                // ))
-                // .background_margin(RectOffset::new(37.0, 37.0, 5.0, 5.0))
-                .margin(RectOffset::new(0.0, 0.0, 10.0, 10.0))
-                //.background_margin(RectOffset::new(0.0, 0.0, 10.0, 10.0))
-                //.background_hovered(Image::from_file_with_format(
-                //    include_bytes!("../examples/ui_assets/button_hovered_background.png"),
-                //    None,
-                // ))
-                // .background_clicked(Image::from_file_with_format(
-                //     include_bytes!("../examples/ui_assets/button_clicked_background.png"),
-                //     None,
-                // ))
-                .font(include_bytes!(
-                    "../../resources/fonts/Comfortaa-Regular.ttf"
-                ))
-                .unwrap()
-                .color(GRAY)
-                .text_color(BLACK)
-                .font_size(20)
-                .build();
-            //     let editbox_style = root_ui()
-            //         .style_builder()
-            //         .background_margin(RectOffset::new(0., 0., 0., 0.))
-            //         .font(include_bytes!(
-            //             "../../resources/fonts/Comfortaa-Regular.ttf"
-            //         ))
-            //         .unwrap()
-            //         .text_color(BLACK)
-            //         .color_selected(RED)
-            //         .font_size(10)
-            //         .build();
-
-            Skin {
-                label_style,
-                button_style,
-                ..root_ui().default_skin()
-            }
-        };
         Self {
             font: load_ttf_font("resources/fonts/Comfortaa-Regular.ttf")
                 .await
                 .unwrap(),
-            ui_skin: skin,
+            frame_style: Frame::default(),
         }
     }
 }
