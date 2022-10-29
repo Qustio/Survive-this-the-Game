@@ -50,7 +50,6 @@ impl Questions {
                     ]),
                 },
                 Question {
-                    // text: &settings.get::<String>("key").unwrap().to_owned(),
                     text: "Жили были три коровы одна из них заболела. А потом пришёл Jeff и починил овервотч.",
                     answers: Answers::new(vec![
                         Answer("Да", |s: &mut State| s.remove_hp(3), "Неправильно"),

@@ -33,9 +33,11 @@ pub struct Game {
 pub enum UserState {
     MainMenu,
     WaitingQuestion,
+    Restart,
     QuestionDialog,
     HintDialog(usize),
-    EndDialog,
+    SuccessEndDialog,
+    FailEndDialog,
 }
 
 impl Game {
@@ -71,10 +73,14 @@ impl Game {
         if is_key_down(KeyCode::Escape) {
             self.closed = Closed::Requested;
         }
+        if let UserState::Restart = self.user_state {
+            self.questions = Questions::new();
+            self.user_state = UserState::WaitingQuestion;
+        }
         if let UserState::WaitingQuestion = self.user_state {
             match self.questions.get_random_question() {
                 Ok(_) => self.user_state = UserState::QuestionDialog,
-                Err(_) => self.user_state = UserState::EndDialog,
+                Err(_) => self.user_state = UserState::SuccessEndDialog,
             }
         }
     }
@@ -84,7 +90,7 @@ impl Game {
 
         // clear background
         clear_background(WHITE);
-        
+
         egui_macroquad::ui(|ctx| {
             let mut style = (*ctx.style()).clone();
 
@@ -102,7 +108,7 @@ impl Game {
             self.engine.constants.frame_style =
                 Frame::window(&style).inner_margin(Margin::same(20.));
 
-            // apply style    
+            // apply style
             ctx.set_style(style);
 
             // render scenes
@@ -129,7 +135,11 @@ impl Game {
                     );
                     self.engine.render_stats(ctx, &self.state);
                 }
-                UserState::EndDialog => todo!(),
+                UserState::SuccessEndDialog => {
+                    self.engine.render_success(ctx, &mut self.user_state)
+                }
+                UserState::FailEndDialog => todo!(),
+                UserState::Restart => (),
             }
             if self.closed == Closed::Requested {
                 self.closed = self.engine.render_exit_dialog(ctx);
