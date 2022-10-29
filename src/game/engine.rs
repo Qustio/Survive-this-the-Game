@@ -41,7 +41,7 @@ impl Engine {
                         *us = UserState::WaitingQuestion;
                     }
                     if ui.button("Разработчики").clicked() {
-                        todo!();
+                        *us = UserState::AboutDialog;
                     }
                     if ui.button("Выход").clicked() {
                         *closed = Closed::Requested;
@@ -198,6 +198,7 @@ impl Engine {
             .resizable(false)
             .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
             .show(ctx, |ui| {
+                ui.set_min_width(430.);
                 ui.label("Вы действительно хотите выйти?");
                 ui.separator();
                 ui.columns(2, |columns| {
@@ -210,6 +211,24 @@ impl Engine {
                 });
             });
         exit
+    }
+
+    pub fn render_about(&self, ctx: &egui::Context, us: &mut UserState) {
+        egui::Window::new("hintw")
+            .title_bar(false)
+            .resizable(false)
+            .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+            .show(ctx, |ui| {
+                ui.heading("Авторы");
+                ui.separator();
+                ui.label("Гура Павел");
+                ui.label("Маслихов Иван");
+                ui.vertical_centered(|ui| {
+                    if ui.button("Назад").clicked() {
+                        *us = UserState::MainMenu;
+                    }
+                });
+            });
     }
 }
 

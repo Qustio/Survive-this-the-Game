@@ -32,6 +32,7 @@ pub struct Game {
 
 pub enum UserState {
     MainMenu,
+    AboutDialog,
     WaitingQuestion,
     Restart,
     QuestionDialog,
@@ -140,6 +141,7 @@ impl Game {
                 }
                 UserState::FailEndDialog => todo!(),
                 UserState::Restart => (),
+                UserState::AboutDialog => self.engine.render_about(ctx, &mut self.user_state),
             }
             if self.closed == Closed::Requested {
                 self.closed = self.engine.render_exit_dialog(ctx);
