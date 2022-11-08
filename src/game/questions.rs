@@ -30,7 +30,7 @@ impl Questions {
                     text: "Вопрос с большим 
                         выбором ответа",
                     answers: Answers::new(vec![
-                        Answer("Да", |s: &mut State| s.remove_hp(3), "-3 воды"),
+                        Answer("Да", |s: &mut State| s.remove_hp(10), "-3 воды"),
                         Answer("Нет", |s: &mut State| s.remove_water(1), "-1 вода"),
                         Answer(
                             "Незнаю",

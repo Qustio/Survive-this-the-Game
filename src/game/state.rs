@@ -6,6 +6,7 @@ pub struct State {
     saturation: (u8, u8),
     water: (u8, u8),
     day: (u8, u8),
+    dead: bool,
 }
 
 impl State {
@@ -15,7 +16,12 @@ impl State {
             saturation: (5, 5),
             water: (3, 3),
             day: (1, 5),
+            dead: false,
         }
+    }
+
+    pub fn is_dead(&self) -> bool {
+        self.dead
     }
 
     pub fn day(&self) -> u8 {
@@ -27,10 +33,10 @@ impl State {
     }
 
     pub fn next_day(&mut self) {
-        if self.water.0 + 1 >= self.water.1 {
-            self.water.0 = self.water.1;
+        if self.day.0 + 1 >= self.day.1 {
+            self.day.0 = self.day.1;
         } else {
-            self.water.0 += 1;
+            self.day.0 += 1;
         }
     }
 
@@ -45,6 +51,7 @@ impl State {
     pub fn remove_hp(&mut self, hp: u8) {
         if self.hp.0 <= hp {
             self.hp.0 = 0;
+            self.dead = true;
         } else {
             self.hp.0 -= hp;
         }
@@ -69,6 +76,7 @@ impl State {
     pub fn remove_water(&mut self, water: u8) {
         if self.water.0 <= water {
             self.water.0 = 0;
+            self.dead = true;
         } else {
             self.water.0 -= water;
         }
@@ -101,6 +109,7 @@ impl State {
     pub fn remove_saturation(&mut self, saturation: u8) {
         if self.saturation.0 <= saturation {
             self.saturation.0 = 0;
+            self.dead = true;
         } else {
             self.saturation.0 -= saturation;
         }

@@ -74,8 +74,10 @@ impl Game {
         if is_key_down(KeyCode::Escape) {
             self.closed = Closed::Requested;
         }
+
         if let UserState::Restart = self.user_state {
             self.questions = Questions::new();
+            self.state = State::new();
             self.user_state = UserState::WaitingQuestion;
         }
         if let UserState::WaitingQuestion = self.user_state {
@@ -83,6 +85,11 @@ impl Game {
                 Ok(_) => self.user_state = UserState::QuestionDialog,
                 Err(_) => self.user_state = UserState::SuccessEndDialog,
             }
+        }
+        if self.state.is_dead() {
+            self.questions = Questions::new();
+            self.state = State::new();
+            self.user_state = UserState::FailEndDialog;
         }
     }
 
@@ -139,7 +146,7 @@ impl Game {
                 UserState::SuccessEndDialog => {
                     self.engine.render_success(ctx, &mut self.user_state)
                 }
-                UserState::FailEndDialog => todo!(),
+                UserState::FailEndDialog => self.engine.render_failure(ctx, &mut self.user_state),
                 UserState::Restart => (),
                 UserState::AboutDialog => self.engine.render_about(ctx, &mut self.user_state),
             }
