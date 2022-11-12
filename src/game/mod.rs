@@ -128,11 +128,13 @@ impl Game {
             // render scenes
             match self.user_state {
                 UserState::MainMenu => {
+                    self.engine.render_back();
                     self.engine
                         .render_main(ctx, &mut self.closed, &mut self.user_state)
                 }
                 UserState::WaitingQuestion => (),
                 UserState::QuestionDialog => {
+                    self.engine.render_back();
                     self.engine.render_question(
                         ctx,
                         &mut self.user_state,
@@ -142,6 +144,7 @@ impl Game {
                     self.engine.render_stats(ctx, &self.state);
                 }
                 UserState::HintDialog(_) => {
+                    self.engine.render_back();
                     self.engine.render_hint(
                         ctx,
                         &mut self.user_state,
@@ -150,11 +153,18 @@ impl Game {
                     self.engine.render_stats(ctx, &self.state);
                 }
                 UserState::SuccessEndDialog => {
+                    self.engine.render_back();
                     self.engine.render_success(ctx, &mut self.user_state)
                 }
-                UserState::FailEndDialog => self.engine.render_failure(ctx, &mut self.user_state),
+                UserState::FailEndDialog => {
+                    self.engine.render_back();
+                    self.engine.render_failure(ctx, &mut self.user_state)
+                }
                 UserState::Restart => (),
-                UserState::AboutDialog => self.engine.render_about(ctx, &mut self.user_state),
+                UserState::AboutDialog => {
+                    self.engine.render_back();
+                    self.engine.render_about(ctx, &mut self.user_state)
+                }
             }
             if self.closed == Closed::Requested {
                 self.closed = self.engine.render_exit_dialog(ctx);

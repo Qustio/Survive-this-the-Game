@@ -27,7 +27,6 @@ impl Engine {
     }
 
     pub fn render_main(&self, ctx: &egui::Context, closed: &mut Closed, us: &mut UserState) {
-        draw_texture(self.constants.sprites["main"], 0., 0., WHITE);
         egui::Window::new("menu")
             .frame(self.constants.frame_style)
             .title_bar(false)
@@ -68,14 +67,13 @@ impl Engine {
     }
 
     pub fn render_success(&self, ctx: &egui::Context, us: &mut UserState) {
-        draw_texture(self.constants.sprites["main"], 0., 0., WHITE);
         egui::Window::new("menu")
             .frame(self.constants.frame_style)
             .title_bar(false)
             .resizable(false)
             .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
             .show(ctx, |ui| {
-                ui.vertical_centered_justified(|ui| {
+                ui.vertical_centered(|ui| {
                     ui.heading("Вам удалось выжить!");
                 });
                 ui.separator();
@@ -91,14 +89,13 @@ impl Engine {
     }
 
     pub fn render_failure(&self, ctx: &egui::Context, us: &mut UserState) {
-        draw_texture(self.constants.sprites["main"], 0., 0., WHITE);
         egui::Window::new("menu")
             .frame(self.constants.frame_style)
             .title_bar(false)
             .resizable(false)
             .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
             .show(ctx, |ui| {
-                ui.vertical_centered_justified(|ui| {
+                ui.vertical_centered(|ui| {
                     ui.heading("Вы погибли!");
                 });
                 ui.separator();
@@ -113,6 +110,17 @@ impl Engine {
             });
     }
 
+    pub fn render_back(&self) {
+        let d = DrawTextureParams {
+            dest_size: Some(vec2(
+                macroquad::window::screen_width(),
+                macroquad::window::screen_height(),
+            )),
+            ..Default::default()
+        };
+        draw_texture_ex(self.constants.sprites["main"], 0., 0., WHITE, d);
+    }
+
     pub fn render_question(
         &self,
         ctx: &egui::Context,
@@ -120,15 +128,15 @@ impl Engine {
         state: &mut State,
         q: Option<&Question>,
     ) {
-        draw_texture(self.constants.sprites["main"], 0., 0., WHITE);
         if let Some(q) = q {
             egui::Window::new("questiontextw")
                 .title_bar(false)
-                .anchor(egui::Align2::RIGHT_CENTER, egui::Vec2::ZERO)
-                .fixed_size(egui::Vec2::new(500., 900.))
-                .fixed_pos(egui::pos2(1100., 0.))
+                .resizable(false)
+                .anchor(egui::Align2::RIGHT_BOTTOM, egui::Vec2::ZERO)
+                //.fixed_size(egui::Vec2::new(500., 900.))
+                //.fixed_pos(egui::pos2(1100., 0.))
                 .show(ctx, |ui| {
-                    ui.set_min_height(500.);
+                    //ui.set_min_height(500.);
                     egui::TopBottomPanel::top("top_panel")
                         .resizable(false)
                         .frame(
@@ -138,7 +146,9 @@ impl Engine {
                         )
                         .min_height(32.0)
                         .show_inside(ui, |ui| {
-                            ui.heading(q.header);
+                            ui.vertical_centered(|ui| {
+                                ui.heading(q.header);
+                            });
                             ui.label(q.text);
                         });
                     egui::TopBottomPanel::bottom("bot_panel")
@@ -146,7 +156,7 @@ impl Engine {
                         .frame(Frame::default().inner_margin(Margin::same(20.)))
                         .min_height(32.0)
                         .show_inside(ui, |ui| {
-                            ui.vertical_centered_justified(|ui| {
+                            ui.vertical_centered(|ui| {
                                 ui.heading("Выберите дейтвие");
                             });
                             ui.separator();
@@ -164,18 +174,18 @@ impl Engine {
     }
 
     pub fn render_hint(&self, ctx: &egui::Context, us: &mut UserState, q: Option<&Question>) {
-        draw_texture(self.constants.sprites["main"], 0., 0., WHITE);
         if let UserState::HintDialog(hi) = us {
             if let Some(q) = q {
                 let hint = q.answers.answers[*hi].get_hint();
                 egui::Window::new("questiontextw")
                     .title_bar(false)
                     .enabled(false)
-                    .anchor(egui::Align2::RIGHT_CENTER, egui::Vec2::ZERO)
-                    .fixed_size(egui::Vec2::new(500., 900.))
-                    .fixed_pos(egui::pos2(1100., 0.))
+                    .resizable(false)
+                    .anchor(egui::Align2::RIGHT_BOTTOM, egui::Vec2::ZERO)
+                    //.fixed_size(egui::Vec2::new(500., 900.))
+                    //.fixed_pos(egui::pos2(1100., 0.))
                     .show(ctx, |ui| {
-                        ui.set_min_height(500.);
+                        //ui.set_min_height(500.);
                         egui::TopBottomPanel::top("top_panel")
                             .resizable(false)
                             .frame(
@@ -185,6 +195,9 @@ impl Engine {
                             )
                             .min_height(32.0)
                             .show_inside(ui, |ui| {
+                                ui.vertical_centered(|ui| {
+                                    ui.heading(q.header);
+                                });
                                 ui.label(q.text);
                             });
                         egui::TopBottomPanel::bottom("bot_panel")
@@ -192,7 +205,7 @@ impl Engine {
                             .frame(Frame::default().inner_margin(Margin::same(20.)))
                             .min_height(32.0)
                             .show_inside(ui, |ui| {
-                                ui.vertical_centered_justified(|ui| {
+                                ui.vertical_centered(|ui| {
                                     ui.heading("Выберите дейтвие");
                                 });
                                 ui.separator();
@@ -245,7 +258,6 @@ impl Engine {
     }
 
     pub fn render_about(&self, ctx: &egui::Context, us: &mut UserState) {
-        draw_texture(self.constants.sprites["main"], 0., 0., WHITE);
         egui::Window::new("hintw")
             .title_bar(false)
             .resizable(false)

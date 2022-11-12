@@ -6,8 +6,8 @@ mod game;
 fn window_conf() -> macroquad::window::Conf {
     macroquad::window::Conf {
         window_title: "Выживай-ка".to_owned(),
-        fullscreen: false,
-        window_resizable: false,
+        fullscreen: true,
+        window_resizable: true,
         window_width: 1600,
         window_height: 900,
         ..Default::default()
