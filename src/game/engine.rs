@@ -1,6 +1,5 @@
-use std::{collections::HashMap, hash::Hash};
+use std::collections::HashMap;
 
-use egui::Context;
 use egui::{style::Margin, Frame};
 use egui_extras::RetainedImage;
 use macroquad::prelude::*;
@@ -60,7 +59,8 @@ impl Engine {
             .anchor(egui::Align2::LEFT_TOP, egui::vec2(30.0, 20.0))
             .auto_sized()
             .show(ctx, |ui| {
-                ui.label(&format!("День: {}/{}", s.day(), s.max_day()));
+                // ui.label(&format!("День: {}/{}", s.day(), s.max_day()));
+                ui.label(&format!("Вопрос: {}/{}", s.q(), s.max_q()));
                 ui.label(&format!("Очки здоровья: {}/{}", s.hp(), s.max_hp()));
                 ui.label(&format!("Голод: {}/{}", s.saturation(), s.max_saturation()));
                 ui.label(&format!("Жажда: {}/{}", s.water(), s.max_water()));
@@ -68,6 +68,7 @@ impl Engine {
     }
 
     pub fn render_success(&self, ctx: &egui::Context, us: &mut UserState) {
+        draw_texture(self.constants.sprites["main"], 0., 0., WHITE);
         egui::Window::new("menu")
             .frame(self.constants.frame_style)
             .title_bar(false)
@@ -90,6 +91,7 @@ impl Engine {
     }
 
     pub fn render_failure(&self, ctx: &egui::Context, us: &mut UserState) {
+        draw_texture(self.constants.sprites["main"], 0., 0., WHITE);
         egui::Window::new("menu")
             .frame(self.constants.frame_style)
             .title_bar(false)
@@ -118,6 +120,7 @@ impl Engine {
         state: &mut State,
         q: Option<&Question>,
     ) {
+        draw_texture(self.constants.sprites["main"], 0., 0., WHITE);
         if let Some(q) = q {
             egui::Window::new("questiontextw")
                 .title_bar(false)
@@ -135,6 +138,7 @@ impl Engine {
                         )
                         .min_height(32.0)
                         .show_inside(ui, |ui| {
+                            ui.heading(q.header);
                             ui.label(q.text);
                         });
                     egui::TopBottomPanel::bottom("bot_panel")
@@ -160,6 +164,7 @@ impl Engine {
     }
 
     pub fn render_hint(&self, ctx: &egui::Context, us: &mut UserState, q: Option<&Question>) {
+        draw_texture(self.constants.sprites["main"], 0., 0., WHITE);
         if let UserState::HintDialog(hi) = us {
             if let Some(q) = q {
                 let hint = q.answers.answers[*hi].get_hint();
@@ -205,7 +210,8 @@ impl Engine {
                     .frame(self.constants.frame_style)
                     .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0., 0.))
                     .show(ctx, |ui| {
-                        ui.label(hint);
+                        ui.label(hint.0);
+                        ui.label(hint.1);
                         ui.vertical_centered(|ui| {
                             if ui.button("Ok").clicked() {
                                 *us = UserState::WaitingQuestion;
@@ -239,6 +245,7 @@ impl Engine {
     }
 
     pub fn render_about(&self, ctx: &egui::Context, us: &mut UserState) {
+        draw_texture(self.constants.sprites["main"], 0., 0., WHITE);
         egui::Window::new("hintw")
             .title_bar(false)
             .resizable(false)
@@ -264,7 +271,7 @@ impl Constants {
             "main".to_string(),
             load_texture("resources/images/main.png").await.unwrap(),
         );
-        let mut textures = HashMap::new();
+        let textures = HashMap::new();
         Self {
             font: load_ttf_font("resources/fonts/Comfortaa-Regular.ttf")
                 .await

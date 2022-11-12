@@ -43,15 +43,13 @@ pub enum UserState {
 
 impl Game {
     pub async fn new() -> Game {
+        let q = Questions::new();
         Self {
             fps: 0,
-            engine: Engine::new(vec![
-                Sprite::new("Вася", "resources/images/gigaman.png", true, (0.0, 300.0)).await,
-            ])
-            .await,
-            state: State::new(),
+            engine: Engine::new(vec![]).await,
+            state: State::new(q.get_size()),
             closed: Closed::Nope,
-            questions: Questions::new(),
+            questions: q,
             user_state: UserState::MainMenu,
         }
     }
@@ -76,9 +74,15 @@ impl Game {
         }
 
         if let UserState::Restart = self.user_state {
-            self.questions = Questions::new();
-            self.state = State::new();
+            let q = Questions::new();
+            self.state = State::new(q.get_size());
+            self.questions = q;
             self.user_state = UserState::WaitingQuestion;
+        }
+        if let UserState::SuccessEndDialog = self.user_state {
+            let q = Questions::new();
+            self.state = State::new(q.get_size());
+            self.questions = q;
         }
         if let UserState::WaitingQuestion = self.user_state {
             match self.questions.get_random_question() {
@@ -87,8 +91,9 @@ impl Game {
             }
         }
         if self.state.is_dead() {
-            self.questions = Questions::new();
-            self.state = State::new();
+            let q = Questions::new();
+            self.state = State::new(q.get_size());
+            self.questions = q;
             self.user_state = UserState::FailEndDialog;
         }
     }
@@ -110,6 +115,7 @@ impl Game {
                 (Small, FontId::new(10.0, Proportional)),
             ]
             .into();
+            //style.visuals = egui::style::Visuals::light();
             style.visuals.window_shadow.extrusion = 0.;
 
             // custom style for frames(windows)

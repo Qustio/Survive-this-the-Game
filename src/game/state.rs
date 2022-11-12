@@ -2,6 +2,7 @@
 
 use std::{collections::HashMap, hash::Hash};
 pub struct State {
+    qlist: (usize, usize),
     hp: (u8, u8),
     saturation: (u8, u8),
     water: (u8, u8),
@@ -10,14 +11,27 @@ pub struct State {
 }
 
 impl State {
-    pub fn new() -> Self {
+    pub fn new(q: usize) -> Self {
         Self {
+            qlist: (0, q),
             hp: (10, 10),
-            saturation: (5, 5),
-            water: (3, 3),
+            saturation: (5, 10),
+            water: (5, 10),
             day: (1, 5),
             dead: false,
         }
+    }
+
+    pub fn q(&self) -> usize {
+        self.qlist.0
+    }
+
+    pub fn q_next(&mut self) {
+        self.qlist.0 += 1
+    }
+
+    pub fn max_q(&self) -> usize {
+        self.qlist.1
     }
 
     pub fn is_dead(&self) -> bool {

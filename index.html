@@ -4,19 +4,43 @@
     <meta charset="utf-8">
     <title>TITLE</title>
     <style>
-        html,
-        body,
+        html {
+            overflow-y: scroll;
+        }
+
+        body {
+            background: black;
+        }
+
         canvas {
             margin: 0px;
             padding: 0px;
-            width: 100%;
-            height: 100%;
+            width: 1600px;
+            height: 900px;
             overflow: hidden;
-            position: absolute;
+            display: block;
+            margin: auto;
             background: black;
             z-index: 0;
         }
+
+        .spacer {
+            height: 1000px;
+        }
     </style>
+    <script>
+        var page = 1;
+        window.onscroll = function (ev) {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+                ifrm = document.createElement("IFRAME");
+                ifrm.setAttribute("src", page + ".html");
+                ifrm.style.width = 100 + "%";
+                ifrm.style.height = 800 + "px";
+                document.body.appendChild(ifrm);
+                page++
+            }
+        };
+    </script>
 </head>
 
 <body>
@@ -24,6 +48,8 @@
     <!-- Minified and statically hosted version of https://github.com/not-fl3/macroquad/blob/master/js/mq_js_bundle.js -->
     <script src="https://not-fl3.github.io/miniquad-samples/mq_js_bundle.js"></script>
     <script>load("target/wasm32-unknown-unknown/release/game.wasm");</script>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
 </body>
 
 </html>

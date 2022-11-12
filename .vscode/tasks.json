@@ -1,0 +1,31 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cargo",
+			"command": "build",
+			"problemMatcher": [
+				"$rustc"
+			],
+			"args": [
+				"--release"
+			],
+			"group": "build",
+			"label": "cargo build"
+		},
+		{
+			"type": "cargo",
+			"command": "build",
+			"problemMatcher": [
+				"$rustc"
+			],
+			"args": [
+				"--release",
+				"--target",
+				"wasm32-unknown-unknown"
+			],
+			"group": "build",
+			"label": "cargo build wasm"
+		}
+	]
+}
